@@ -19,8 +19,8 @@ score = 0
 winner = 0 # 0: No winner yet, 1: Player wins, 2: Dealer wins - variable to keep track
 
 #starting positon of player and dealer cards
-player_pos = [50, 200]
-dealer_pos = [50, 400]
+player_pos = [50, 400]
+dealer_pos = [50, 200]
 
 holecard_pos = [dealer_pos[0] + CARD_SIZE[0] / 2, dealer_pos[1] + CARD_SIZE[1] / 2]
 
@@ -232,21 +232,24 @@ def draw(canvas):
     
     #title
     
-    canvas.draw_text("BLACKJACK", [70,100], 80, "Black") 
+    canvas.draw_text("BLACKJACK", [70,70], 80, "Black") 
+    canvas.draw_text("Score : " + str(score), [400,120], 30, "Blue")      
     
-    # test to make sure that card.draw works, replace with your code below
     
-    
-    player_hand.draw(canvas, player_pos)
+    #cards
+    canvas.draw_text("DEALER", [dealer_pos[0],dealer_pos[1]-20], 30, "Black") 
     dealer_hand.draw(canvas,dealer_pos)
-
+    
+    canvas.draw_text("PLAYER", [player_pos[0],player_pos[1]-20], 30, "Black") 
+    player_hand.draw(canvas, player_pos)
+    
     if in_play:
         canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, holecard_pos, CARD_BACK_SIZE)
    
     
     #outcome
     
-    canvas.draw_text(outcome, [150,175], 30, "White") 
+    canvas.draw_text(outcome,[player_pos[0]+250,player_pos[1]-20], 40, "AQUA", "serif") 
 
 
 
