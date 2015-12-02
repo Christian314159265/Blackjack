@@ -16,14 +16,19 @@ card_back = simplegui.load_image("http://storage.googleapis.com/codeskulptor-ass
 in_play = False # if player is still playing
 outcome = ""
 score = 0
-winner = 0 # 0: No winner yet, 1: Player wins, 2: Dealer wins - variable to keep track
+winner = 3 # 0: No winner yet, 1: Player wins, 2: Dealer wins - variable to keep track
 
+#starting positon of player and dealer cards
+player_pos = [50, 400]
+dealer_pos = [50, 200]
 
+holecard_pos = [dealer_pos[0] + CARD_SIZE[0] / 2, dealer_pos[1] + CARD_SIZE[1] / 2]
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
+
 
 
 # define card class
@@ -92,7 +97,11 @@ class Hand:
                 return hand_value
             
     def draw(self, canvas, pos):
-        pass	# draw a hand on the canvas, use the draw method for cards
+        # draw a hand on the canvas, use the draw method for cards
+        i = 0
+        for card in self.cards:
+            card.draw(canvas, [pos[0] + CARD_SIZE[0] * i, pos[1]])
+            i += 1
     
 
 
@@ -131,7 +140,13 @@ def deal():
     random.shuffle(deck.cards)
     
     #score
-    if winner == 1:
+    if winner == 0:
+        score -=1
+        outcome = "Player lose"
+        winner = 3
+        deal()
+       
+    elif winner == 1:
         score += 1
     elif winner ==2:
         score -= 1
@@ -144,16 +159,18 @@ def deal():
         player_hand.add_card(deck.deal_card())
         dealer_hand.add_card(deck.deal_card())
     
+    
     ####################printing hands to console ###########################################
     print "			-- New game --"
     print "Current score : ",score
     print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
     print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
     print
+    outcome = "Hit or stand?"
 
     
 def hit():
-    global winner, in_play
+    global winner, in_play, outcome
     
     if in_play and winner == 0:
         if player_hand.get_value() < 21: #made just less than not equal?
@@ -161,11 +178,13 @@ def hit():
         if player_hand.get_value() > 21:
             print "Player is busted!"
             print "Dealer wins!"
+            outcome = "New Deal"
             
             
            
             in_play = False
             winner = 2 #winner is dealer
+            outcome = "New Deal"
     
     
         ############CONSOLE######################
@@ -173,16 +192,20 @@ def hit():
         print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
         print
         ############CONSOLE######################
+        
     
 def stand():
-    global winner, dealer_hand
+    global winner, dealer_hand, outcome, in_play
     playing = False
+    in_play = False
     if winner == 0: # no winner yet 
         if player_hand.get_value() > 21:
             print "Player is busted!"
             print "Dealer wins!"
            
             winner = 2 #winner is dealer
+            
+            outcome = "New Deal"
            
             
         else:
@@ -200,7 +223,7 @@ def stand():
                 else:
                     print "Player wins!"
                     winner = 1 #winner is player
-            
+            outcome = "new deal"
             
         
         ############CONSOLE######################
@@ -210,12 +233,31 @@ def stand():
         ############CONSOLE######################
          
 
-# draw handler    
+## draw handler    
 def draw(canvas):
-    # test to make sure that card.draw works, replace with your code below
     
-    card = Card("S", "A")
-    card.draw(canvas, [300, 300])
+    #title
+    
+    canvas.draw_text("BLACKJACK", [70,70], 80, "Black") 
+    canvas.draw_text("Score : " + str(score), [400,120], 30, "Blue")      
+    canvas.draw_text("TEST : " + str(winner), [400,150], 30, "Blue")      
+
+    
+    #cards
+    canvas.draw_text("DEALER", [dealer_pos[0],dealer_pos[1]-20], 30, "Black") 
+    dealer_hand.draw(canvas,dealer_pos)
+    
+    canvas.draw_text("PLAYER", [player_pos[0],player_pos[1]-20], 30, "Black") 
+    player_hand.draw(canvas, player_pos)
+    
+    if in_play:
+        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, holecard_pos, CARD_BACK_SIZE)
+   
+    
+    #outcome
+    
+    canvas.draw_text(outcome,[player_pos[0]+250,player_pos[1]-20], 40, "AQUA", "serif") 
+    
 
 
 # initialization frame
