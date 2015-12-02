@@ -120,7 +120,7 @@ class Deck:
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, winner, deck, player_hand, dealer_hand
+    global outcome, in_play, winner, deck, player_hand, dealer_hand, score
     
     #initialize objects
     deck  = Deck()
@@ -129,6 +129,14 @@ def deal():
     
     #shuffle deck
     random.shuffle(deck.cards)
+    
+    #score
+    if winner == 1:
+        score += 1
+    elif winner ==2:
+        score -= 1
+    
+    
     winner = 0
     in_play = True
     #deal two cards to dealer and player
@@ -153,6 +161,8 @@ def hit():
         if player_hand.get_value() > 21:
             print "Player is busted!"
             print "Dealer wins!"
+            
+            
            
             in_play = False
             winner = 2 #winner is dealer
@@ -173,6 +183,7 @@ def stand():
             print "Dealer wins!"
            
             winner = 2 #winner is dealer
+           
             
         else:
             while dealer_hand.get_value() < 17:
