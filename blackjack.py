@@ -92,7 +92,11 @@ class Hand:
                 return hand_value
             
     def draw(self, canvas, pos):
-        pass	# draw a hand on the canvas, use the draw method for cards
+        # draw a hand on the canvas, use the draw method for cards
+        i = 0
+        for card in self.cards:
+            card.draw(canvas, [pos[0] + CARD_SIZE[0] * i, pos[1] + CARD_SIZE[1]])
+            i += 1
     
 
 
@@ -143,6 +147,8 @@ def deal():
     for i in range (2):
         player_hand.add_card(deck.deal_card())
         dealer_hand.add_card(deck.deal_card())
+    
+    
     
     ####################printing hands to console ###########################################
     print "			-- New game --"
@@ -210,12 +216,14 @@ def stand():
         ############CONSOLE######################
          
 
-# draw handler    
+## draw handler    
 def draw(canvas):
     # test to make sure that card.draw works, replace with your code below
     
-    card = Card("S", "A")
-    card.draw(canvas, [300, 300])
+    
+    player_hand.draw(canvas, [100, 0])
+    dealer_hand.draw(canvas, [100, 200])
+
 
 
 # initialization frame
