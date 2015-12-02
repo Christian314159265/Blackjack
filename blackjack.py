@@ -18,7 +18,11 @@ outcome = ""
 score = 0
 winner = 0 # 0: No winner yet, 1: Player wins, 2: Dealer wins - variable to keep track
 
+#starting positon of player and dealer cards
+player_pos = [50, 200]
+dealer_pos = [50, 400]
 
+holecard_pos = [dealer_pos[0] + CARD_SIZE[0] / 2, dealer_pos[1] + CARD_SIZE[1] / 2]
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
@@ -95,7 +99,7 @@ class Hand:
         # draw a hand on the canvas, use the draw method for cards
         i = 0
         for card in self.cards:
-            card.draw(canvas, [pos[0] + CARD_SIZE[0] * i, pos[1] + CARD_SIZE[1]])
+            card.draw(canvas, [pos[0] + CARD_SIZE[0] * i, pos[1]])
             i += 1
     
 
@@ -156,10 +160,11 @@ def deal():
     print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
     print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
     print
+    outcome = "Hit or stand?"
 
     
 def hit():
-    global winner, in_play
+    global winner, in_play, outcome
     
     if in_play and winner == 0:
         if player_hand.get_value() < 21: #made just less than not equal?
@@ -167,11 +172,13 @@ def hit():
         if player_hand.get_value() > 21:
             print "Player is busted!"
             print "Dealer wins!"
+            outcome = "New Deal"
             
             
            
             in_play = False
             winner = 2 #winner is dealer
+            outcome = "New Deal"
     
     
         ############CONSOLE######################
@@ -179,16 +186,20 @@ def hit():
         print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
         print
         ############CONSOLE######################
+        
     
 def stand():
-    global winner, dealer_hand
+    global winner, dealer_hand, outcome, in_play
     playing = False
+    in_play = False
     if winner == 0: # no winner yet 
         if player_hand.get_value() > 21:
             print "Player is busted!"
             print "Dealer wins!"
            
             winner = 2 #winner is dealer
+            
+            outcome = "New Deal"
            
             
         else:
@@ -206,7 +217,7 @@ def stand():
                 else:
                     print "Player wins!"
                     winner = 1 #winner is player
-            
+            outcome = "new deal"
             
         
         ############CONSOLE######################
@@ -218,11 +229,24 @@ def stand():
 
 ## draw handler    
 def draw(canvas):
+    
+    #title
+    
+    canvas.draw_text("BLACKJACK", [70,100], 80, "Black") 
+    
     # test to make sure that card.draw works, replace with your code below
     
     
-    player_hand.draw(canvas, [100, 0])
-    dealer_hand.draw(canvas, [100, 200])
+    player_hand.draw(canvas, player_pos)
+    dealer_hand.draw(canvas,dealer_pos)
+
+    if in_play:
+        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, holecard_pos, CARD_BACK_SIZE)
+   
+    
+    #outcome
+    
+    canvas.draw_text(outcome, [150,175], 30, "White") 
 
 
 
