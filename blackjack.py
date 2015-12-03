@@ -29,7 +29,8 @@ SUITS = ('C', 'S', 'H', 'D')
 RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
 
-
+#flag to see if deal is pressed within a game
+is_deal = False
 
 # define card class
 class Card:
@@ -129,48 +130,51 @@ class Deck:
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, winner, deck, player_hand, dealer_hand, score
+    global outcome, in_play, winner, deck, player_hand, dealer_hand, score, is_deal
     
-    #initialize objects
-    deck  = Deck()
-    player_hand = Hand()
-    dealer_hand = Hand()
-    
-    #shuffle deck
-    random.shuffle(deck.cards)
-    
-    #score
-    if winner == 0:
-        score -=1
-        outcome = "Player lose"
-        winner = 3
-        deal()
-       
-    elif winner == 1:
-        score += 1
-    elif winner ==2:
-        score -= 1
-    
-    
-    winner = 0
-    in_play = True
-    #deal two cards to dealer and player
-    for i in range (2):
-        player_hand.add_card(deck.deal_card())
-        dealer_hand.add_card(deck.deal_card())
-    
-    
-    ####################printing hands to console ###########################################
-    print "			-- New game --"
-    print "Current score : ",score
-    print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
-    print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
-    print
-    outcome = "Hit or stand?"
+    if not is_deal:
+        #initialize objects
+        deck  = Deck()
+        player_hand = Hand()
+        dealer_hand = Hand()
 
+        #shuffle deck
+        random.shuffle(deck.cards)
+
+        #score
+        if winner == 0:
+            score -=1
+            outcome = "Player lose"
+            winner = 3
+
+        elif winner == 1:
+            score += 1
+        elif winner == 2:
+            score -= 1
+
+        is_deal = True
+        winner = 0
+        in_play = True
+        #deal two cards to dealer and player
+        for i in range (2):
+            player_hand.add_card(deck.deal_card())
+            dealer_hand.add_card(deck.deal_card())
+
+
+        ####################printing hands to console ###########################################
+        print "			-- New game --"
+        print "Current score : ",score
+        print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
+        print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
+        print
+        outcome = "Hit or stand?"
+    else:
+        outcome = "Player loses"
+        winner = 2
+        is_deal = False
     
 def hit():
-    global winner, in_play, outcome
+    global winner, in_play, outcome, is_deal
     
     if in_play and winner == 0:
         if player_hand.get_value() < 21: #made just less than not equal?
@@ -192,10 +196,10 @@ def hit():
         print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
         print
         ############CONSOLE######################
-        
+        is_deal = False
     
 def stand():
-    global winner, dealer_hand, outcome, in_play
+    global winner, dealer_hand, outcome, in_play, is_deal
     playing = False
     in_play = False
     if winner == 0: # no winner yet 
@@ -231,7 +235,7 @@ def stand():
         print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
         print
         ############CONSOLE######################
-         
+        is_deal = False
 
 ## draw handler    
 def draw(canvas):
