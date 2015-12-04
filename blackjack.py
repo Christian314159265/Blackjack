@@ -15,12 +15,13 @@ card_back = simplegui.load_image("http://storage.googleapis.com/codeskulptor-ass
 # initialize some useful global variables
 in_play = False # if player is still playing
 outcome = ""
+prompt = ""
 score = 0
 winner = 3 # 0: No winner yet, 1: Player wins, 2: Dealer wins - variable to keep track
 
 #starting positon of player and dealer cards
-player_pos = [50, 400]
-dealer_pos = [50, 200]
+player_pos = [50, 490]
+dealer_pos = [50, 190]
 
 holecard_pos = [dealer_pos[0] + CARD_SIZE[0] / 2, dealer_pos[1] + CARD_SIZE[1] / 2]
 
@@ -52,10 +53,10 @@ class Card:
     def get_rank(self):
         return self.rank
 
-    def draw(self, canvas, pos):
+    def draw(self, canvas, pos, rotation):
         card_loc = (CARD_CENTER[0] + CARD_SIZE[0] * RANKS.index(self.rank), 
                     CARD_CENTER[1] + CARD_SIZE[1] * SUITS.index(self.suit))
-        canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
+        canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE, rotation)
         
 # define hand class
 
@@ -97,11 +98,12 @@ class Hand:
             else:
                 return hand_value
             
-    def draw(self, canvas, pos):
+    def draw(self, canvas, pos,rotation):
         # draw a hand on the canvas, use the draw method for cards
         i = 0
+        space = 30
         for card in self.cards:
-            card.draw(canvas, [pos[0] + CARD_SIZE[0] * i, pos[1]])
+            card.draw(canvas, [pos[0] + (CARD_SIZE[0] + space) * i, pos[1]], rotation)
             i += 1
     
 
@@ -130,7 +132,7 @@ class Deck:
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, winner, deck, player_hand, dealer_hand, score, is_deal
+    global outcome, prompt, in_play, winner, deck, player_hand, dealer_hand, score, is_deal
     
     if not is_deal:
         #initialize objects
@@ -144,124 +146,112 @@ def deal():
         #score
         if winner == 0:
             score -=1
-            outcome = "Player lose"
-            winner = 3
-
         elif winner == 1:
             score += 1
         elif winner == 2:
             score -= 1
 
-        is_deal = True
-        winner = 0
-        in_play = True
+            
+        is_deal = True # new game in progress
+        winner = 0     # winner set to no one
+        in_play = True # player is still choosing to hit or stand, hole card of dealer covered
+        
         #deal two cards to dealer and player
         for i in range (2):
             player_hand.add_card(deck.deal_card())
             dealer_hand.add_card(deck.deal_card())
-
-
-        ####################printing hands to console ###########################################
-        print "			-- New game --"
-        print "Current score : ",score
-        print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
-        print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
-        print
-        outcome = "Hit or stand?"
-    else:
-        outcome = "Player loses"
-        winner = 2
+        
+        outcome = ""
+        prompt = "Hit or stand?"
+        
+    else: # handles the case where game has not ended but deal is pressed
+        outcome = "Player loses! "
+        prompt  = "New deal?"
+        #winner is set to dealer
+        winner = 2   
+        
+        #game has ended
         is_deal = False
     
 def hit():
-    global winner, in_play, outcome, is_deal
+    global winner, in_play, outcome, prompt, is_deal
     
     if in_play and winner == 0:
-        if player_hand.get_value() < 21: #made just less than not equal?
+        if player_hand.get_value() < 21: 
             player_hand.add_card(deck.deal_card())
         if player_hand.get_value() > 21:
-            print "Player is busted!"
-            print "Dealer wins!"
-            outcome = "New Deal"
-            
-            
-           
+            outcome = "Player is busted, Dealer wins!"
+            prompt = "New deal?"
+        
             in_play = False
-            winner = 2 #winner is dealer
-            outcome = "New Deal"
+            winner = 2 #winner is dealer    
     
-    
-        ############CONSOLE######################
-        print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
-        print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
-        print
-        ############CONSOLE######################
+      
         is_deal = False
     
 def stand():
-    global winner, dealer_hand, outcome, in_play, is_deal
+    global winner, dealer_hand, outcome, prompt, in_play, is_deal
+    
     playing = False
     in_play = False
+    
     if winner == 0: # no winner yet 
         if player_hand.get_value() > 21:
-            print "Player is busted!"
-            print "Dealer wins!"
-           
             winner = 2 #winner is dealer
-            
-            outcome = "New Deal"
-           
-            
+            outcome = "Player is busted, Dealer wins!"
+            prompt = "New deal?"
+                      
         else:
             while dealer_hand.get_value() < 17:
                 dealer_hand.add_card(deck.deal_card())
                 
             if dealer_hand.get_value() > 21:
-                print "Dealer is busted!"
-                print "Player wins!"
+                outcome = "Dealer is busted, Player wins!"
+                prompt = "New deal?"
                 winner = 1 #winner is player
             else:
                 if player_hand.get_value() <= dealer_hand.get_value():
-                    print "Dealer wins!"
+                    outcome = "Dealer wins! New deal?"
+                    prompt = "New deal?"
+
                     winner = 2 #winner is dealer  
                 else:
-                    print "Player wins!"
+                    outcome = "Player wins!"
+                    prompt = "New deal?"
                     winner = 1 #winner is player
-            outcome = "new deal"
             
-        
-        ############CONSOLE######################
-        print "player hand: " + str(player_hand) + " val: " + str(player_hand.get_value())
-        print "dealer hand: " + str(dealer_hand) + " val: " + str(dealer_hand.get_value())  
-        print
-        ############CONSOLE######################
+
         is_deal = False
 
 ## draw handler    
 def draw(canvas):
     
-    #title
+    #title and AJ cards
     
-    canvas.draw_text("BLACKJACK", [70,70], 80, "Black") 
-    canvas.draw_text("Score : " + str(score), [400,120], 30, "Blue")      
-    canvas.draw_text("TEST : " + str(winner), [400,150], 30, "Blue")      
-
+    show_card1 = Card("S", "A")
+    show_card2 = Card("S", "J")
+    show_card1.draw(canvas, [420, 30],60)
+    show_card2.draw(canvas, [440, 30],120)
+    
+    canvas.draw_text("BLACKJACK", [50,80], 60, "Black") 
+    canvas.draw_text("Score : " + str(score), [420,170], 30, "Beige") 
+    
     
     #cards
-    canvas.draw_text("DEALER", [dealer_pos[0],dealer_pos[1]-20], 30, "Black") 
-    dealer_hand.draw(canvas,dealer_pos)
+    canvas.draw_text("DEALER", [dealer_pos[0],dealer_pos[1]-30], 30, "Black") 
+    dealer_hand.draw(canvas,dealer_pos,0)
     
-    canvas.draw_text("PLAYER", [player_pos[0],player_pos[1]-20], 30, "Black") 
-    player_hand.draw(canvas, player_pos)
+    canvas.draw_text("PLAYER", [player_pos[0],player_pos[1]-30], 30, "Black") 
+    player_hand.draw(canvas, player_pos,0)
     
+    #dealer hole card covered when player is still playing
     if in_play:
         canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, holecard_pos, CARD_BACK_SIZE)
    
     
-    #outcome
-    
-    canvas.draw_text(outcome,[player_pos[0]+250,player_pos[1]-20], 40, "AQUA", "serif") 
-    
+    #prompt and outcome
+    canvas.draw_text(prompt,[10,player_pos[1]-90], 40, "MidnightBlue", "serif") 
+    canvas.draw_text(outcome,[10,player_pos[1]-140], 40, "DeepPink", "serif") 
 
 
 # initialization frame
